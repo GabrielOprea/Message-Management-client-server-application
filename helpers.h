@@ -53,14 +53,6 @@ typedef struct {
 	TTopic* array;
 } TTable;
 
-
-/*
- * Macro de verificare a erorilor
- * Exemplu:
- *     int fd = open(file_name, O_RDONLY);
- *     DIE(fd == -1, "open failed");
- */
-
 #define DIE(assertion, call_description)	\
 	do {									\
 		if (assertion) {					\
@@ -71,7 +63,7 @@ typedef struct {
 		}									\
 	} while(0)
 
-#define BUFLEN		1000	// dimensiunea maxima a calupului de date
-#define MAX_CLIENTS	50	// numarul maxim de clienti in asteptare
+#define BUFLEN		1000	
+#define MAX_CLIENTS	50	
 
 #endif
