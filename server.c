@@ -13,14 +13,14 @@
 #define TOPIC_SIZE 50
 
 
-//Modul de utilizare al serverului
+//The usage of the server
 void usage(char *file)
 {
 	fprintf(stderr, "Usage: %s <Port_Server>\n", file);
 	exit(0);
 }
 
-//Functie ce scoate clientul cu socketul sock din lista de clienti
+//Function that removes the client with a specific socket from the list
 void remove_client(int* count, TClient* clients, int sock) {
 	for(int i = 0; i < (*count); i++) {
 		if(clients[i].sockfd == sock) {
@@ -34,7 +34,7 @@ void remove_client(int* count, TClient* clients, int sock) {
 	}
 }
 
-//Functie ce dezactiveaza algoritmul lui Nagle
+//Function that disables Neagle's algorithm
 void turn_off_nagle(int sockfd) {
 	int flag = 1;
 	int ret = setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY,
@@ -42,8 +42,8 @@ void turn_off_nagle(int sockfd) {
 	DIE(ret < 0, "setsockopt");
 }
 
-/*Functie ce primeste un mesaj UDP de la sockfd si il sotcheaza corespunzator
-in structura TUDP_Msg */
+/*Function that receives and UDP message from sockfd and stores it in
+the TUDP_Msg structure*/
 void receive_udp(TUDP_Msg* udp_msg, int sockfd, struct sockaddr_in* cli_addr,
 socklen_t* clilen) {
 	memset(udp_msg, 0, sizeof(TUDP_Msg));
@@ -57,7 +57,7 @@ socklen_t* clilen) {
 	udp_msg->ip = cli_addr->sin_addr;
 }
 
-//Functie ce cauta clientul cu id-ul din buffer in vector si inchide socketul 
+//Function that searches the client with the id from buffer, then closes the socket
 int search_client(int nr_clients, TClient* vec, char buffer[BUFLEN], int sock){
 	for(int i = 0; i < nr_clients; i++) {
 		if(!strcmp (buffer, vec[i].id)) {
@@ -89,22 +89,22 @@ TBackup** backup, int* backup_count, int* backup_capacity);
 int main(int argc, char *argv[])
 {
 
-	//Numar insuficient de argumente
+	//Insufficient number of args
 	if (argc < 2) {
 		usage(argv[0]);
 	}
 
-	//Initializez tabela in care tin datele(ArrayList de liste de topicuri)
+	//Initialises the table where the data is being kept(arraylist of lists of topics)
 	TTable* table = init_table();
 	if(!table) {
 		perror("Eroare la alocare!");
 		exit(1);
 	}
 
-	int count = 0; //nr curent de clienti
-	int clients_capacity = 1; //capacitatea vectorului de clienti
-	int backup_count = 0; //nr curent de backup-uri
-	int backup_capacity = 1; //capacitatea backup-urilor
+	int count = 0; //current number of clients
+	int clients_capacity = 1; //capacity of clients' array
+	int backup_count = 0; //current number of backups
+	int backup_capacity = 1;
 
 	TClient* clients = calloc(clients_capacity, sizeof(TClient));
 	if(!clients) {
@@ -139,13 +139,13 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	//Completez structura pentru adresa clientului udp
+	//Completes the structure for an UDP client
 	udp_cli_addr.sin_port = htons(portno);
 	udp_cli_addr.sin_family = AF_INET;
 	udp_cli_addr.sin_addr.s_addr = INADDR_ANY;
 	udpclilen = sizeof(struct sockaddr_in);
 
-	//Deschid socket de listen pt udp
+	//Opens one listen socket for udp client
 	sockfd_udp = socket(AF_INET, SOCK_DGRAM, 0);
 	DIE(sockfd_udp < 0, "udp sock");
 
@@ -153,11 +153,11 @@ int main(int argc, char *argv[])
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 
-	//Socket de listen pentru tcp
+	//The listen socket for TCP client
 	sockfd_tcp = socket(AF_INET, SOCK_STREAM, 0);
 	DIE(sockfd_tcp < 0, "tcp sock");
 
-	//Dau bind celor 2 socketi
+	//the two sockets are binded
 	ret = bind(sockfd_tcp, (struct sockaddr *) &serv_addr, size);
 	DIE(ret < 0, "tcp binding failed");
 
@@ -170,13 +170,13 @@ int main(int argc, char *argv[])
 	FD_ZERO(&read_fds);
 	FD_ZERO(&tmp_fds);
 
-	//Adaug socketii in multime
+	//Then the two sockets are added to the set
 	FD_SET(0, &read_fds);
 	FD_SET(sockfd_tcp, &read_fds);
 	FD_SET(sockfd_udp, &read_fds);
 	fdmax = sockfd_tcp > sockfd_udp ? sockfd_tcp : sockfd_udp;
 
-	//Dezactivez algoritmul Nagle
+	//Turns off Neagle algorithm's
 	turn_off_nagle(sockfd_tcp);
 	
 	tcpclilen = sizeof(tcp_cli_addr);
@@ -190,14 +190,14 @@ int main(int argc, char *argv[])
 			exit(-1);
 		}
 
-		//Aici serverul primeste exit de la tastatura
+		//there the server receives exit command
 		if(FD_ISSET(0, &tmp_fds)) {
 
 			ret = recv_exit(fdmax, &read_fds, sockfd_udp, sockfd_tcp);
 			if(!ret)break;
 		}
 
-		//Primeste un mesaj udp
+		//Receives UDP message
 		else if (FD_ISSET(sockfd_udp, &tmp_fds)) {
 			TUDP_Msg udp_msg;
 			receive_udp(&udp_msg, sockfd_udp, &udp_cli_addr, &udpclilen);
@@ -205,19 +205,19 @@ int main(int argc, char *argv[])
 			update_table(table, &udp_msg, &read_fds, &backup, &backup_count, &backup_capacity);
 		}
 
-		//Aici primesc un mesaj de pe socketul de listen tcp
+		//Receives message from the listen socket of TCP client
 		else if(FD_ISSET(sockfd_tcp, &tmp_fds)) {
 			
 			recv_tcp_msg(sockfd_tcp, &fdmax, &read_fds, &count, &clients_capacity, &clients, backup_count, backup, &tcp_cli_addr, &tcpclilen);
 
 		} else {
-			/* S-au primit date de la unul din socketii de client, asa
-			ca iterez prin ei sa il gasesc pe cel adecvat */
+			/* The data is received from a client socket, so I check which
+			client sent it*/
 			recv_client_msg(fdmax, &tmp_fds, &read_fds, clients, &count, table);		
 		}
 	}
 
-	//Inchid socketii
+	//The sockets mult be closed:
 	for(int i = 0; i<= fdmax; i++) {
 		if (FD_ISSET(i, &read_fds)) {
 			close(i);
