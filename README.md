@@ -9,4 +9,4 @@ from the array. When the client recconects, I empty his corresponding list and s
 
 The messages sent can be of different types: integers, floats, large numbers, strings. The client receives the message and is able to
 parse it accordingly. All the communication is done with I/O multiplexing and socket programming. The server allows many simultaneous
-connections, and the clients use commands in stdin to communicate with the server. At the end of the program, all the sockets are closed.
+connections, and the clients use commands from stdin to communicate with the server. At the end of the program, all the sockets are closed.
