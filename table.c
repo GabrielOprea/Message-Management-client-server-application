@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-//Initializeaza un backup pt client
+//Initialise backup for a client
 TBackup init_backup(TClient cli) {
 	TBackup backup;
 	memcpy(backup.id, cli.id, 10);
@@ -10,7 +10,7 @@ TBackup init_backup(TClient cli) {
 	return backup;
 }
 
-//Adauga la inceputul listei de clienti
+//Adds a client at the beginning of the list
 TList cons(TClient element, TList l)
 {
 	TList temp = malloc(sizeof(TCell));
@@ -20,7 +20,7 @@ TList cons(TClient element, TList l)
 	return temp;
 }
 
-//Adauga la inceputul listei de mesaje udp din backup
+//Adds at the beginning of the UDP list of messages
 TList_UDP cons_UDP(TUDP_Msg element, TList_UDP l)
 {
 	TList_UDP temp = malloc(sizeof(TCell_UDP));
@@ -30,7 +30,7 @@ TList_UDP cons_UDP(TUDP_Msg element, TList_UDP l)
 	return temp;
 }
 
-//Elibereaza un element din lista de clienti 
+//Deletes and frees an element from the clients' list.
 TList tail(TList l)
 {
 	TList temp = l->next; 
@@ -38,7 +38,8 @@ TList tail(TList l)
 	return temp;
 }
 
-//Elibereaza un element din lista de mesaje
+
+//Deletes and frees an element from the messages' list.
 TList_UDP tail_UDP(TList_UDP l)
 {
 	TList_UDP temp = l->next; 
@@ -46,13 +47,13 @@ TList_UDP tail_UDP(TList_UDP l)
 	return temp;
 }
 
-//Intoarce primul mesaj udp
+//Returns the first UDP message
 TUDP_Msg head_UDP(TList_UDP l) {
 	return l->info;
 }
 
-/*Initiaza o tabela in care stochez un vector de topicuri, iar fiecare
-topic va avea o lista simplu inlantuita de clienti */
+/*Initialises a table with an array of topics, each topic having a
+singly linked list of clients */
 TTable* init_table() {
 	TTable* temp = malloc(sizeof(TTable));
 	if(!temp) return NULL;
@@ -63,7 +64,7 @@ TTable* init_table() {
 	return temp;
 }
 
-//Adauga un nou topic in arraylist si realoca memorie, dupa caz
+//Adds a new topic in the arraylist and does memory reallocation if necessary
 void add_topic(TTable* table, TTopic topic) {
 	table->array[table->crt_len] = topic;
 	table->crt_len++;
@@ -73,7 +74,7 @@ void add_topic(TTable* table, TTopic topic) {
 	}
 }
 
-//Creaza un topic cu un anumit continut in numele sau
+//Creates a new topic with the name from the parameter
 TTopic create_topic(char* topic) {
 	TTopic t;
 	memcpy(t.topic, topic, 50 * sizeof(char));
@@ -81,7 +82,7 @@ TTopic create_topic(char* topic) {
 	return t;
 }
 
-//Afiseaza tabela, utilizat pentru debugging
+//Prints the table, used for debugging
 void print_table(TTable* table) {
 	for(int i = 0; i < table->crt_len; i++) {
 		printf("%s ", table->array[i].topic);
@@ -94,7 +95,7 @@ void print_table(TTable* table) {
 	}
 }
 
-//Afiseaza backup-ul, utilizat pentru debugging
+//Prints the backup, used for debugging
 void print_backup(TBackup* backup, int backup_count) {
 	for(int k = 0; k < backup_count; k++) {
 		printf("%s ", backup[k].id);
